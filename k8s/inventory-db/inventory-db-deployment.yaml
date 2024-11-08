@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-db
+  template:
+    metadata:
+      labels:
+        app: inventory-db
+    spec:
+      containers:
+      - name: inventory-db
+        image: klevi730/inventory-database:latest
+        ports:
+        - containerPort: 5432
+        envFrom:
+        - secretRef:
+            name: inventory-db-secrets
+        volumeMounts:
+        - name: postgres-inventory-volume
+          mountPath: /var/lib/postgresql/data
+        readinessProbe:
+          exec:
+            command: [ "pg_isready", "-U", "inventory", "-d", "movies" ]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command: [ "pg_isready", "-U", "inventory", "-d", "movies" ]
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: postgres-inventory-volume

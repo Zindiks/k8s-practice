@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: billing-app-configs
+data:
+  NODE_ENV: production
+  DB_ORDER_HOST: billing-db-service
+  DB_ORDER_PORT: "5432"
+  DB_ORDER_NAME: orders
+  RMQ_HOST: rabbitmq-service
+  RMQ_PORT: "5672"
+  APP_ORDER_HOST: orders-app-service

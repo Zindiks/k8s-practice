@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: billing-db
+  template:
+    metadata:
+      labels:
+        app: billing-db
+    spec:
+      containers:
+      - name: billing-db
+        image: klevi730/billing-database:latest
+        ports:
+        - containerPort: 5432
+        envFrom:
+        - secretRef:
+            name: billing-db-secrets
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: billing-db-storage
+        readinessProbe:
+          exec:
+            command: [ "pg_isready", "-U", "$(POSTGRES_USER)", "-d", "$(POSTGRES_DB)" ]
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: billing-db-storage
+        persistentVolumeClaim:
+          claimName: billing-db-pvc
